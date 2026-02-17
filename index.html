@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Systems Monday | Interactive Console</title>
+    <title>Systems Monday | SPH AI Strategy Console</title>
     <style>
         :root {
             --cobalt: #2E5BFF;
@@ -15,128 +15,147 @@
             --danger: #ff4d4d;
         }
 
+        * { box-sizing: border-box; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--dark);
             color: var(--light);
             margin: 0;
-            padding: 20px;
+            padding: 0;
+            overflow-x: hidden;
         }
 
-        .dashboard { max-width: 1000px; margin: 0 auto; }
-
-        header {
+        /* Hero Styling */
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), 
+                        url('https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1200&q=80'); /* Placeholder for your generated graphic */
+            background-size: cover;
+            background-position: center;
+            padding: 60px 20px;
             text-align: center;
-            padding: 30px 0;
-            border-bottom: 2px solid var(--cobalt);
-            margin-bottom: 30px;
-            position: relative;
+            border-bottom: 4px solid var(--cobalt);
         }
 
-        h1 { font-size: 2.2rem; color: var(--mint); margin: 0; text-transform: uppercase; letter-spacing: 2px;}
+        .hero h1 { font-size: 2.8rem; color: var(--mint); margin: 0; letter-spacing: 3px; text-transform: uppercase; }
+        .status-bar { color: var(--mint); font-size: 0.9rem; margin-top: 10px; height: 20px; font-family: monospace; }
 
-        .reset-btn {
-            position: absolute;
-            right: 0;
-            bottom: 10px;
-            background: transparent;
-            border: 1px solid var(--danger);
-            color: var(--danger);
-            padding: 5px 12px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.7rem;
-            text-transform: uppercase;
-            transition: 0.3s;
+        /* Path Selector */
+        .portal-section {
+            padding: 40px 10%;
+            background: #111;
         }
 
-        .reset-btn:hover {
-            background: var(--danger);
-            color: white;
-        }
-
-        .grid-layout {
+        .portal-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 20px;
+            margin-top: 20px;
+        }
+
+        .portal-btn {
+            background: var(--panel);
+            border: 2px solid #444;
+            border-radius: 12px;
+            padding: 20px;
+            color: white;
+            cursor: pointer;
+            transition: 0.3s;
+            text-align: center;
+        }
+
+        .portal-btn:hover { border-color: var(--mint); transform: translateY(-5px); }
+        .portal-btn.active { border-color: var(--mint); box-shadow: 0 0 15px rgba(0, 245, 160, 0.3); }
+        .portal-btn h3 { margin: 10px 0; font-size: 1rem; }
+        .lock-status { display: block; font-size: 0.7rem; color: var(--orange); font-weight: bold; }
+
+        /* Main Dashboard */
+        .dashboard {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: 1fr 1.5fr;
+            gap: 25px;
         }
 
         .panel {
             background: var(--panel);
             padding: 25px;
-            border-radius: 12px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        h2 { color: var(--cobalt); font-size: 1.1rem; margin-top: 0; margin-bottom: 20px; text-transform: uppercase; border-left: 3px solid var(--mint); padding-left: 10px;}
+        h2 { color: var(--cobalt); font-size: 1.1rem; margin-top: 0; text-transform: uppercase; border-left: 4px solid var(--mint); padding-left: 10px; }
 
-        .task-item { display: flex; align-items: center; margin-bottom: 12px; }
+        /* Inputs & Controls */
+        .task-item { display: flex; align-items: center; margin-bottom: 15px; font-size: 0.9rem; }
+        input[type="checkbox"] { width: 18px; height: 18px; margin-right: 12px; accent-color: var(--mint); }
         
-        input[type="checkbox"] {
-            width: 18px; height: 18px; margin-right: 12px; accent-color: var(--mint);
-            cursor: pointer;
+        input[type="text"], textarea {
+            width: 100%; background: rgba(255,255,255,0.05); border: 1px solid #444;
+            color: white; padding: 12px; margin-bottom: 10px; border-radius: 6px;
         }
 
-        .big3-input, textarea {
-            width: 100%;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid #444;
-            color: white;
-            padding: 12px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-            font-size: 0.9rem;
-        }
-
-        .big3-input:focus { border-color: var(--mint); outline: none; }
-
-        table { width: 100%; border-collapse: collapse; }
-        th { color: var(--orange); font-size: 0.8rem; padding: 10px; }
-        td { border: 1px solid #333; padding: 10px; text-align: center; }
+        /* Habit Tracker Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { color: var(--orange); font-size: 0.7rem; padding: 10px; }
+        td { border: 1px solid #333; padding: 12px; text-align: center; }
 
         .habit-btn {
-            width: 25px; height: 25px; border-radius: 50%;
+            width: 24px; height: 24px; border-radius: 50%;
             border: 2px solid #555; background: transparent;
             cursor: pointer; transition: 0.2s;
         }
 
-        .habit-btn.active {
-            background: var(--mint); border-color: var(--mint);
-            box-shadow: 0 0 8px var(--mint);
-        }
+        .habit-btn.active { background: var(--mint); border-color: var(--mint); box-shadow: 0 0 8px var(--mint); }
 
-        .status-msg {
-            text-align: center; font-size: 0.8rem; color: var(--mint);
-            margin-top: 10px; height: 20px; opacity: 0.7;
-        }
+        .reset-container { text-align: center; padding: 40px; }
+        .reset-btn { background: transparent; border: 1px solid var(--danger); color: var(--danger); padding: 10px 20px; cursor: pointer; border-radius: 5px; }
+        .reset-btn:hover { background: var(--danger); color: white; }
 
-        @media (max-width: 768px) { 
-            .grid-layout { grid-template-columns: 1fr; } 
-            .reset-btn { position: static; margin-top: 15px; }
-        }
+        @media (max-width: 850px) { .dashboard { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
 
-<div class="dashboard">
-    <header>
-        <h1>SYSTEMS MONDAY CONSOLE</h1>
-        <div id="status" class="status-msg">System Active</div>
-        <button class="reset-btn" onclick="resetSystem()">Reset New Week</button>
+    <header class="hero">
+        <h1>SYSTEMS MONDAY</h1>
+        <div id="status" class="status-bar">STRATEGY | PROCESS | HUMANS (SPH) ACTIVE</div>
     </header>
 
-    <div class="grid-layout">
-        
+    <section class="portal-section">
+        <h2 style="border:none; text-align:center; color: white;">SELECT USER PATHWAY</h2>
+        <div class="portal-grid">
+            <div class="portal-btn" id="p-resident" onclick="setRole('resident')">
+                <span>🏠</span><h3>RESIDENTS</h3>
+                <span class="lock-status" id="l-resident">🔒 LOCKED</span>
+            </div>
+            <div class="portal-btn" id="p-care" onclick="setRole('careworker')">
+                <span>🏥</span><h3>CARE WORKERS</h3>
+                <span class="lock-status" id="l-care">🔒 LOCKED</span>
+            </div>
+            <div class="portal-btn" id="p-org" onclick="setRole('org')">
+                <span>🏢</span><h3>ORGANIZATIONS</h3>
+                <span class="lock-status" id="l-org">🔒 LOCKED</span>
+            </div>
+            <div class="portal-btn" id="p-partner" onclick="setRole('partner')">
+                <span>🤝</span><h3>PARTNERS</h3>
+                <span class="lock-status" id="l-partner">🔒 LOCKED</span>
+            </div>
+        </div>
+    </section>
+
+    <main class="dashboard">
         <div class="panel">
-            <h2>Phase 1: Sunday Prep</h2>
-            <div class="task-item"><input type="checkbox" id="check1" class="save-state"> <span>Mental Brain Dump</span></div>
-            <div class="task-item"><input type="checkbox" id="check2" class="save-state"> <span>Environment Ready</span></div>
-            <div class="task-item"><input type="checkbox" id="check3" class="save-state"> <span>Schedule Scrub</span></div>
+            <h2 id="blueprint-title">Sunday Pre-Flight</h2>
+            <div id="blueprint-tasks">
+                </div>
             
-            <h2 style="margin-top:25px;">The Big 3 Goals</h2>
-            <input type="text" id="goal1" class="big3-input save-state" placeholder="1. Primary Objective">
-            <input type="text" id="goal2" class="big3-input save-state" placeholder="2. Secondary Task">
-            <input type="text" id="goal3" class="big3-input save-state" placeholder="3. Quick Win">
+            <h2 style="margin-top:30px;">Strategic Big 3</h2>
+            <input type="text" id="goal1" class="save-state" placeholder="Primary SPH Objective">
+            <input type="text" id="goal2" class="save-state" placeholder="Secondary Process Goal">
+            <input type="text" id="goal3" class="save-state" placeholder="Immediate Action Win">
         </div>
 
         <div class="panel">
@@ -145,62 +164,103 @@
                 <thead>
                     <tr><th>SYSTEM</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th></tr>
                 </thead>
-                <tbody id="habit-grid"></tbody>
+                <tbody id="habit-grid">
+                    </tbody>
             </table>
-        </div>
 
-        <div class="panel" style="grid-column: 1 / -1;">
-            <h2>Monday Night Reflection</h2>
-            <div class="grid-layout">
-                <textarea id="wins" class="save-state" placeholder="List your wins..."></textarea>
-                <textarea id="opti" class="save-state" placeholder="Automation & Optimization ideas..."></textarea>
-            </div>
+            <h2 style="margin-top:30px;">Monday Reflection</h2>
+            <textarea id="wins" class="save-state" placeholder="What were today's wins?"></textarea>
+            <textarea id="opti" class="save-state" placeholder="How can we optimize the system?"></textarea>
         </div>
+    </main>
+
+    <div class="reset-container">
+        <button class="reset-btn" onclick="resetSystem()">RESET CURRENT WEEK DATA</button>
     </div>
-</div>
 
 <script>
-    const habitNames = ["Morning Ritual", "Deep Work (90m)", "Financial Check", "Peer Check-in"];
-    const days = ["M", "T", "W", "T", "F"];
+    // Configuration for different paths
+    const roleConfig = {
+        resident: {
+            tasks: ["Mental Brain Dump", "Environment Reset", "Weekly Budget Check"],
+            habits: ["Morning Ritual", "Home Care", "Personal Learning", "Health Check"]
+        },
+        careworker: {
+            tasks: ["Safety Protocol Review", "Shift Handover Prep", "Energy Management"],
+            habits: ["Patient Audit", "Compliance Log", "Team Sync", "Wellness Break"]
+        },
+        org: {
+            tasks: ["AI ROI Strategy", "Workflow Bottleneck ID", "Resource Allocation"],
+            habits: ["Data Governance", "Process Automation", "KPI Review", "Human Feedback"]
+        },
+        partner: {
+            tasks: ["SPH Synergy Audit", "Growth Roadmap Review", "Networking Prep"],
+            habits: ["Strategic Outbound", "Joint Venture Review", "Market Analysis", "Accountability Pulse"]
+        }
+    };
 
-    // Build the grid
-    const grid = document.getElementById('habit-grid');
-    habitNames.forEach((name, rowIndex) => {
-        let row = `<tr><td style="text-align:left; font-size:0.75rem">${name}</td>`;
-        days.forEach((day, colIndex) => {
-            const id = `habit-${rowIndex}-${colIndex}`;
-            row += `<td><button id="${id}" class="habit-btn" onclick="toggleHabit('${id}')"></button></td>`;
-        });
-        row += `</tr>`;
-        grid.innerHTML += row;
-    });
+    let currentRole = localStorage.getItem('selectedRole') || 'resident';
 
-    // Interaction Logic
+    function setRole(role) {
+        currentRole = role;
+        localStorage.setItem('selectedRole', role);
+        
+        // UI Updates
+        document.querySelectorAll('.portal-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById('p-' + (role === 'careworker' ? 'care' : role)).classList.add('active');
+        
+        document.querySelectorAll('.lock-status').forEach(s => s.innerText = "🔒 LOCKED");
+        document.getElementById('l-' + (role === 'careworker' ? 'care' : role)).innerText = "🔓 UNLOCKED";
+
+        updateDashboardContent();
+        updateStatus("Path Unlocked: " + role.toUpperCase());
+    }
+
+    function updateDashboardContent() {
+        const config = roleConfig[currentRole];
+        
+        // Update Tasks
+        const taskContainer = document.getElementById('blueprint-tasks');
+        taskContainer.innerHTML = config.tasks.map((t, i) => `
+            <div class="task-item">
+                <input type="checkbox" id="t-${currentRole}-${i}" class="save-state">
+                <span>${t}</span>
+            </div>
+        `).join('');
+
+        // Update Habits
+        const habitContainer = document.getElementById('habit-grid');
+        habitContainer.innerHTML = config.habits.map((h, rowIndex) => {
+            let row = `<tr><td style="font-size:0.75rem; text-align:left;">${h}</td>`;
+            for(let i=0; i<5; i++) {
+                const id = `h-${currentRole}-${rowIndex}-${i}`;
+                row += `<td><button id="${id}" class="habit-btn" onclick="toggleHabit('${id}')"></button></td>`;
+            }
+            return row + `</tr>`;
+        }).join('');
+
+        loadSavedData();
+        attachSaveListeners();
+    }
+
     function toggleHabit(id) {
         const btn = document.getElementById(id);
         btn.classList.toggle('active');
         localStorage.setItem(id, btn.classList.contains('active'));
-        updateStatus("Progress updated.");
+        updateStatus("System Synced.");
     }
 
-    document.querySelectorAll('.save-state').forEach(el => {
-        el.addEventListener('input', () => {
-            const val = el.type === 'checkbox' ? el.checked : el.value;
-            localStorage.setItem(el.id, val);
-            updateStatus("Syncing...");
+    function attachSaveListeners() {
+        document.querySelectorAll('.save-state').forEach(el => {
+            el.addEventListener('input', () => {
+                const val = el.type === 'checkbox' ? el.checked : el.value;
+                localStorage.setItem(el.id, val);
+                updateStatus("Saving...");
+            });
         });
-    });
-
-    // Reset Logic
-    function resetSystem() {
-        if (confirm("Are you sure? This will wipe your current week's data to start a fresh cycle.")) {
-            localStorage.clear();
-            location.reload();
-        }
     }
 
-    // Initial Load
-    window.onload = () => {
+    function loadSavedData() {
         document.querySelectorAll('.save-state').forEach(el => {
             const saved = localStorage.getItem(el.id);
             if (saved !== null) {
@@ -211,13 +271,24 @@
         document.querySelectorAll('.habit-btn').forEach(btn => {
             if (localStorage.getItem(btn.id) === 'true') btn.classList.add('active');
         });
-    };
+    }
+
+    function resetSystem() {
+        if (confirm("Reset the week? All progress for this role will be cleared.")) {
+            const rolePrefixes = [`t-${currentRole}`, `h-${currentRole}`, 'goal', 'wins', 'opti'];
+            Object.keys(localStorage).forEach(key => {
+                if (rolePrefixes.some(p => key.startsWith(p))) localStorage.removeItem(key);
+            });
+            location.reload();
+        }
+    }
 
     function updateStatus(msg) {
-        const status = document.getElementById('status');
-        status.innerText = msg;
-        setTimeout(() => { status.innerText = "System Active"; }, 1500);
+        document.getElementById('status').innerText = ">> " + msg;
     }
+
+    // Initialize
+    window.onload = () => setRole(currentRole);
 </script>
 
 </body>
