@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Systems Monday | Interactive Console</title>
+    <style>
+        :root {
+            --cobalt: #2E5BFF;
+            --mint: #00F5A0;
+            --orange: #FF6B35;
+            --dark: #1A1A1B;
+            --light: #F8F9FA;
+            --panel: #252526;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+            background-color: var(--dark);
+            color: var(--light);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .dashboard { max-width: 1000px; margin: 0 auto; }
+
+        header {
+            text-align: center;
+            padding: 30px 0;
+            border-bottom: 2px solid var(--cobalt);
+            margin-bottom: 30px;
+        }
+
+        h1 { font-size: 2.2rem; color: var(--mint); margin: 0; text-transform: uppercase; }
+
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: var(--panel);
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        h2 { color: var(--cobalt); font-size: 1.2rem; margin-top: 0; margin-bottom: 20px; text-transform: uppercase; }
+
+        /* Checklist & Inputs */
+        .task-item { display: flex; align-items: center; margin-bottom: 12px; }
+        
+        input[type="checkbox"] {
+            width: 18px; height: 18px; margin-right: 12px; accent-color: var(--mint);
+        }
+
+        .big3-input, textarea {
+            width: 100%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid #444;
+            color: white;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .big3-input:focus { border-color: var(--mint); outline: none; }
+
+        /* Habit Tracker */
+        table { width: 100%; border-collapse: collapse; }
+        th { color: var(--orange); font-size: 0.8rem; padding: 10px; }
+        td { border: 1px solid #333; padding: 10px; text-align: center; }
+
+        .habit-btn {
+            width: 25px; height: 25px; border-radius: 50%;
+            border: 2px solid #555; background: transparent;
+            cursor: pointer; transition: 0.2s;
+        }
+
+        .habit-btn.active {
+            background: var(--mint); border-color: var(--mint);
+            box-shadow: 0 0 8px var(--mint);
+        }
+
+        .status-msg {
+            text-align: center; font-size: 0.8rem; color: var(--mint);
+            margin-top: 10px; height: 20px;
+        }
+
+        @media (max-width: 768px) { .grid-layout { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+
+<div class="dashboard">
+    <header>
+        <h1>SYSTEMS MONDAY CONSOLE</h1>
+        <div id="status" class="status-msg">All data synced to local storage.</div>
+    </header>
+
+    <div class="grid-layout">
+        
+        <div class="panel">
+            <h2>Phase 1: Pre-Flight</h2>
+            <div class="task-item"><input type="checkbox" id="check1" class="save-state"> <span>Brain Dump</span></div>
+            <div class="task-item"><input type="checkbox" id="check2" class="save-state"> <span>Environment Prep</span></div>
+            <div class="task-item"><input type="checkbox" id="check3" class="save-state"> <span>Schedule Review</span></div>
+            
+            <h2 style="margin-top:25px;">The Big 3 Goals</h2>
+            <input type="text" id="goal1" class="big3-input save-state" placeholder="Goal 1">
+            <input type="text" id="goal2" class="big3-input save-state" placeholder="Goal 2">
+            <input type="text" id="goal3" class="big3-input save-state" placeholder="Goal 3">
+        </div>
+
+        <div class="panel">
+            <h2>Weekly Progress</h2>
+            <table>
+                <thead>
+                    <tr><th>HABIT</th><th>M</th><th>T</th><th>W</th><th>T</th><th>F</th></tr>
+                </thead>
+                <tbody id="habit-grid">
+                    </tbody>
+            </table>
+        </div>
+
+        <div class="panel" style="grid-column: 1 / -1;">
+            <h2>Phase 5: Reflection</h2>
+            <textarea id="wins" class="save-state" placeholder="Today's Wins..."></textarea>
+            <textarea id="opti" class="save-state" placeholder="System Optimizations..."></textarea>
+        </div>
+    </div>
+</div>
+
+<script>
+    const habitNames = ["Ritual", "Deep Work", "Finance", "Accountability"];
+    const days = ["M", "T", "W", "T", "F"];
+
+    // Initialize Habit Grid
+    const grid = document.getElementById('habit-grid');
+    habitNames.forEach((name, rowIndex) => {
+        let row = `<tr><td style="text-align:left; font-size:0.8rem">${name}</td>`;
+        days.forEach((day, colIndex) => {
+            const id = `habit-${rowIndex}-${colIndex}`;
+            row += `<td><button id="${id}" class="habit-btn" onclick="toggleHabit('${id}')"></button></td>`;
+        });
+        row += `</tr>`;
+        grid.innerHTML += row;
+    });
+
+    // Toggle and Save Habits
+    function toggleHabit(id) {
+        const btn = document.getElementById(id);
+        btn.classList.toggle('active');
+        localStorage.setItem(id, btn.classList.contains('active'));
+        showStatus();
+    }
+
+    // Save Text and Checkboxes
+    document.querySelectorAll('.save-state').forEach(el => {
+        el.addEventListener('input', () => {
+            const val = el.type === 'checkbox' ? el.checked : el.value;
+            localStorage.setItem(el.id, val);
+            showStatus();
+        });
+    });
+
+    // Load Data on Start
+    window.onload = () => {
+        // Load text and checks
+        document.querySelectorAll('.save-state').forEach(el => {
+            const saved = localStorage.getItem(el.id);
+            if (saved !== null) {
+                if (el.type === 'checkbox') el.checked = (saved === 'true');
+                else el.value = saved;
+            }
+        });
+        // Load habits
+        document.querySelectorAll('.habit-btn').forEach(btn => {
+            if (localStorage.getItem(btn.id) === 'true') btn.classList.add('active');
+        });
+    };
+
+    function showStatus() {
+        const status = document.getElementById('status');
+        status.innerText = "Saving changes...";
+        setTimeout(() => { status.innerText = "All data synced to local storage."; }, 800);
+    }
+</script>
+
+</body>
+</html>
